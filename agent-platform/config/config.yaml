@@ -1,0 +1,35 @@
+app:
+  name: business-multi-tool-agent
+  env: dev
+
+llm:
+  provider: mock
+  timeout_seconds: 30
+  max_retries: 2
+  qwen_api:
+    base_url_env: QWEN_BASE_URL
+    api_key_env: QWEN_API_KEY
+    model_env: QWEN_MODEL
+  remote_qwen:
+    base_url_env: REMOTE_QWEN_BASE_URL
+    api_key_env: REMOTE_QWEN_API_KEY
+    model_env: REMOTE_QWEN_MODEL
+
+rag:
+  docs_dir: data/docs
+  index_dir: data/index
+  chunk_size: 500
+  chunk_overlap: 80
+  top_k: 5
+
+sql:
+  sqlite_path: data/sql/business.db
+  max_rows: 50
+  timeout_seconds: 5
+
+observer:
+  sqlite_path: data/traces/agent_traces.db
+
+agent:
+  max_iterations: 3
+  enable_reflection: true

@@ -4,6 +4,7 @@ app:
 
 llm:
   provider: mock
+  # mock 模式需要把 provider改为mock
   timeout_seconds: 30
   max_retries: 2
   qwen_api:

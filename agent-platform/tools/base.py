@@ -14,6 +14,7 @@ class Evidence(BaseModel):
 class ToolRequest(BaseModel):
     query: str
     session_id: str
+    trace_id: str | None = None
     params: dict[str, Any] = Field(default_factory=dict)
 
 

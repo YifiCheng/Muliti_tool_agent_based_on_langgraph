@@ -25,6 +25,12 @@ __pycache__/
 *$py.class
 *.so
 
+.pytest_cache/
+*.pyc
+*.db
+*.sqlite
+data/traces/
+
 # 忽略虚拟环境
 venv/
 env/

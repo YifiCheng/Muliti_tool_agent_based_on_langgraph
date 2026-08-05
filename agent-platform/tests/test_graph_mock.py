@@ -5,10 +5,31 @@ from observer.sqlite_store import SQLiteTraceStore
 from tools.mock_tools import build_mock_registry
 
 
+class MockRegistryLLMProvider(MockLLMProvider):
+    def chat_json(self, messages: list[dict], schema_name: str) -> dict:
+        if schema_name == "plan":
+            last = messages[-1]["content"] if messages else ""
+            if any(token in last for token in ["销售", "订单", "商品"]):
+                return {
+                    "tools": ["mock_sql"],
+                    "reason": "mock plan selected SQL tool",
+                }
+            if any(token in last for token in ["计算", "+", "-", "*", "/"]):
+                return {
+                    "tools": ["mock_calculator"],
+                    "reason": "mock plan selected calculator tool",
+                }
+            return {
+                "tools": ["mock_document_search"],
+                "reason": "mock plan selected mock document search tool",
+            }
+        return super().chat_json(messages, schema_name)
+
+
 def test_graph_runs_document_search_flow(tmp_path):
     trace_store = SQLiteTraceStore(tmp_path / "traces.db")
     graph = build_agent_graph(
-        llm=LLMClient(MockLLMProvider()),
+        llm=LLMClient(MockRegistryLLMProvider()),
         registry=build_mock_registry(),
         trace_store=trace_store,
     )
@@ -60,7 +81,7 @@ def test_graph_runs_sql_flow(tmp_path):
 def test_graph_records_node_and_tool_traces(tmp_path):
     trace_store = SQLiteTraceStore(tmp_path / "traces.db")
     graph = build_agent_graph(
-        llm=LLMClient(MockLLMProvider()),
+        llm=LLMClient(MockRegistryLLMProvider()),
         registry=build_mock_registry(),
         trace_store=trace_store,
     )

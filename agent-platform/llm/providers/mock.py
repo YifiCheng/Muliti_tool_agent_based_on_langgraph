@@ -23,7 +23,7 @@ class MockLLMProvider:
                     "reason": "mock plan selected calculator tool",
                 }
             return {
-                "tools": ["mock_document_search"],
+                "tools": ["document_search"],
                 "reason": "mock plan selected document search tool",
             }
 

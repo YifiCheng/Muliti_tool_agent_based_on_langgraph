@@ -12,7 +12,7 @@ from graph.state import AgentState
 from llm.client import LLMClient, build_llm_client
 from observer.sqlite_store import SQLiteTraceStore
 from observer.trace_store import TraceStore
-from tools.mock_tools import build_mock_registry
+from tools.registry_factory import build_agent_registry
 from tools.registry import ToolRegistry
 
 
@@ -25,7 +25,7 @@ def build_agent_graph(
 ):
     settings = settings or load_settings()
     llm = llm or build_llm_client(settings)
-    registry = registry or build_mock_registry()
+    registry = registry or build_agent_registry(settings)
     trace_store = trace_store or SQLiteTraceStore(settings.observer.sqlite_path)
 
     builder = StateGraph(AgentState)

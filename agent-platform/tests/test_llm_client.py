@@ -17,7 +17,7 @@ def test_mock_chat_json_plan():
         [{"role": "user", "content": "plan this task"}],
         schema_name="plan",
     )
-    assert result["tools"] == ["mock_document_search"]
+    assert result["tools"] == ["document_search"]
 
 
 def test_build_default_mock_client():

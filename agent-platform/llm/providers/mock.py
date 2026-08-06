@@ -14,7 +14,7 @@ class MockLLMProvider:
         if schema_name == "plan":
             if any(token in last for token in ["销售", "订单", "商品"]):
                 return {
-                    "tools": ["mock_sql"],
+                    "tools": ["sql_query"],
                     "reason": "mock plan selected SQL tool",
                 }
             if any(token in last for token in ["计算", "+", "-", "*", "/"]):

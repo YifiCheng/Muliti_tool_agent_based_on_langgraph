@@ -30,6 +30,7 @@ __pycache__/
 *.db
 *.sqlite
 data/traces/
+data/sql/*.db
 
 # 忽略虚拟环境
 venv/

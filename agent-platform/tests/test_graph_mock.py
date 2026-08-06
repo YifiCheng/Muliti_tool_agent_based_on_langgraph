@@ -56,7 +56,7 @@ def test_graph_runs_document_search_flow(tmp_path):
 def test_graph_runs_sql_flow(tmp_path):
     trace_store = SQLiteTraceStore(tmp_path / "traces.db")
     graph = build_agent_graph(
-        llm=LLMClient(MockLLMProvider()),
+        llm=LLMClient(MockRegistryLLMProvider()),
         registry=build_mock_registry(),
         trace_store=trace_store,
     )

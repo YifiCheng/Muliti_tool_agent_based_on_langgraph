@@ -4,6 +4,8 @@ from llm.client import LLMClient
 from reflection.models import ReflectionDecision
 from reflection.rule_reflector import RuleReflector
 
+from graph.prompts import build_reflection_messages
+
 
 class LLMReflector:
     def __init__(self, llm: LLMClient) -> None:
@@ -17,17 +19,11 @@ class LLMReflector:
         evidence: list[dict[str, Any]],
     ) -> ReflectionDecision:
         raw = self.llm.chat_json(
-            [
-                {
-                    "role": "user",
-                    "content": (
-                        "请判断工具结果是否足以回答用户问题，只返回 JSON。\n"
-                        f"用户问题: {query}\n"
-                        f"工具结果: {tool_results}\n"
-                        f"证据: {evidence}"
-                    ),
-                }
-            ],
+            build_reflection_messages(
+                query=query,
+                tool_results=tool_results,
+                evidence=evidence,
+            ),
             schema_name="reflection",
         )
         decision = ReflectionDecision.model_validate(raw)

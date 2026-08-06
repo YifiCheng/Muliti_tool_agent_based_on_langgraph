@@ -19,3 +19,6 @@ class AgentState(TypedDict, total=False):
     iteration: int
     max_iterations: int
     errors: list[dict[str, Any]]
+    thread_id: str
+    approval_status: str
+    approval_decision: dict[str, Any] | None

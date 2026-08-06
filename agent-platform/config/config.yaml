@@ -34,3 +34,5 @@ observer:
 agent:
   max_iterations: 3
   enable_reflection: true
+  checkpoint_path: data/checkpoints/agent_checkpoints.sqlite
+  require_sql_approval: false

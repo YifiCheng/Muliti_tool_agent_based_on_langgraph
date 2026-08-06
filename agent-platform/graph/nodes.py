@@ -19,6 +19,15 @@ from graph.state_utils import (
     merge_evidence,
 )
 
+from langgraph.types import interrupt
+
+from graph.approval import (
+    ApprovalDecision,
+    ApprovalRequest,
+    requires_approval,
+)
+from observer.schema import TraceEvent
+
 
 def build_plan_node(
     llm: LLMClient,
@@ -236,3 +245,97 @@ def build_answer_node(llm: LLMClient, trace_store: TraceStore | None = None):
             return update
 
     return answer_node
+
+def build_approval_node(
+    *,
+    require_sql_approval: bool,
+    trace_store: TraceStore | None = None,
+):
+    def approval_node(state: AgentState) -> dict[str, Any]:
+        selected_tools = state.get("selected_tools", [])
+        if not requires_approval(
+            selected_tools,
+            require_sql_approval=require_sql_approval,
+        ):
+            return {
+                "approval_status": "not_required",
+                "approval_decision": None,
+            }
+
+        thread_id = state.get("thread_id", state["session_id"])
+        request = ApprovalRequest(
+            thread_id=thread_id,
+            session_id=state["session_id"],
+            trace_id=state["trace_id"],
+            tool_name="sql_query",
+            query=state.get("active_query") or state["user_query"],
+            reason="SQL 查询需要人工确认后才能执行。",
+            risk="medium",
+        )
+
+        payload = {
+            "type": "approval_required",
+            "request": request.model_dump(),
+            "allowed_decisions": ["approve", "reject"],
+        }
+
+        # 先记录 pending，再暂停。不要用 trace_span 包裹 interrupt，
+        # 因为 interrupt 的暂停信号不应被记录成普通节点失败。
+        if trace_store is not None:
+            trace_store.append(
+                TraceEvent(
+                    trace_id=state["trace_id"],
+                    session_id=state["session_id"],
+                    event_type="node",
+                    name="approval",
+                    output_summary="pending",
+                    metadata={
+                        "thread_id": thread_id,
+                        "tool_name": "sql_query",
+                    },
+                )
+            )
+
+        # 不要给 interrupt() 加 try/except。
+        # LangGraph 通过该暂停信号保存 checkpoint。
+        raw_decision = interrupt(payload)
+        decision = ApprovalDecision.model_validate(raw_decision)
+
+        if trace_store is not None:
+            trace_store.append(
+                TraceEvent(
+                    trace_id=state["trace_id"],
+                    session_id=state["session_id"],
+                    event_type="node",
+                    name="approval",
+                    output_summary=decision.decision,
+                    metadata={
+                        "thread_id": thread_id,
+                        "tool_name": "sql_query",
+                        "reason": decision.reason,
+                    },
+                )
+            )
+
+        if decision.decision == "reject":
+            return {
+                "approval_status": "rejected",
+                "approval_decision": decision.model_dump(),
+                "errors": [
+                    *state.get("errors", []),
+                    {
+                        "category": "approval",
+                        "source": "sql_query",
+                        "message": decision.reason or "SQL query rejected",
+                        "iteration": state.get("iteration", 0),
+                        "retryable": False,
+                    },
+                ],
+            }
+
+        return {
+            "approval_status": "approved",
+            "approval_decision": decision.model_dump(),
+        }
+
+    return approval_node

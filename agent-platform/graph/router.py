@@ -15,3 +15,8 @@ def route_after_reflect(state: AgentState) -> str:
         return "plan"
 
     return "answer"
+
+def route_after_approval(state: AgentState) -> str:
+    if state.get("approval_status") == "rejected":
+        return "answer"
+    return "tool"

@@ -46,11 +46,13 @@ class SQLConfig(BaseModel):
 
 class ObserverConfig(BaseModel):
     sqlite_path: str
-
+    
 
 class AgentConfig(BaseModel):
     max_iterations: int = Field(default=3, ge=1, le=10)
     enable_reflection: bool = True
+    checkpoint_path: str = "data/checkpoints/agent_checkpoints.sqlite"
+    require_sql_approval: bool = False
 
 
 class AppConfig(BaseModel):

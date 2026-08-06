@@ -7,6 +7,7 @@ class AgentState(TypedDict, total=False):
     user_query: str
     messages: list[dict[str, str]]
     plan: dict[str, Any]
+    replan_query: str | None
     selected_tools: list[str]
     tool_results: list[dict[str, Any]]
     evidence: list[dict[str, Any]]

@@ -8,6 +8,8 @@ from tools.runner import run_tool_safely
 
 from graph.state import AgentState
 
+from reflection.llm_reflector import HybridReflector
+
 
 def build_plan_node(llm: LLMClient, trace_store: TraceStore | None = None):
     def plan_node(state: AgentState) -> dict[str, Any]:
@@ -80,7 +82,13 @@ def build_tool_node(registry: ToolRegistry, trace_store: TraceStore | None = Non
     return tool_node
 
 
-def build_reflect_node(llm: LLMClient, trace_store: TraceStore | None = None):
+def build_reflect_node(
+    llm: LLMClient,
+    trace_store: TraceStore | None = None,
+    reflector: HybridReflector | None = None,
+):
+    reflector = reflector or HybridReflector(llm)
+
     def reflect_node(state: AgentState) -> dict[str, Any]:
         trace_id = state["trace_id"]
         session_id = state["session_id"]
@@ -89,40 +97,15 @@ def build_reflect_node(llm: LLMClient, trace_store: TraceStore | None = None):
         evidence = state.get("evidence", [])
 
         def run() -> dict[str, Any]:
-            if not tool_results:
-                return {
-                    "reflection": {
-                        "is_sufficient": False,
-                        "missing_info": ["no tool results"],
-                        "next_action": "retrieve_more",
-                        "reason": "No tool result was returned.",
-                    }
-                }
-
-            if not evidence and any(result.get("tool_name") == "mock_document_search" for result in tool_results):
-                return {
-                    "reflection": {
-                        "is_sufficient": False,
-                        "missing_info": ["no evidence"],
-                        "next_action": "retrieve_more",
-                        "reason": "Document search did not return evidence.",
-                    }
-                }
-
-            reflection = llm.chat_json(
-                [
-                    {
-                        "role": "user",
-                        "content": (
-                            f"Question: {query}\n"
-                            f"Tool results: {tool_results}\n"
-                            f"Evidence: {evidence}"
-                        ),
-                    }
-                ],
-                schema_name="reflection",
+            decision = reflector.reflect(
+                query=query,
+                tool_results=tool_results,
+                evidence=evidence,
             )
-            return {"reflection": reflection}
+            return {
+                "reflection": decision.model_dump(),
+                "replan_query": decision.replan_query,
+            }
 
         if trace_store is None:
             return run()
@@ -136,8 +119,10 @@ def build_reflect_node(llm: LLMClient, trace_store: TraceStore | None = None):
             input_summary=query,
         ) as span:
             update = run()
-            span["output_summary"] = update["reflection"].get("next_action", "")
-            span["metadata"]["is_sufficient"] = update["reflection"].get("is_sufficient")
+            reflection = update["reflection"]
+            span["output_summary"] = reflection["next_action"]
+            span["metadata"]["is_sufficient"] = reflection["is_sufficient"]
+            span["metadata"]["source"] = reflection["source"]
             return update
 
     return reflect_node

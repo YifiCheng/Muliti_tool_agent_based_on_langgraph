@@ -11,10 +11,21 @@ from api.service import AgentService
 from config.settings import load_settings
 from observer.sqlite_store import SQLiteTraceStore
 
+from pathlib import Path
+
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Business Multi Tool Agent API")
     service = AgentService()
+    static_dir = Path(__file__).resolve().parents[1] / "static"
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+    @app.get("/")
+    def index() -> FileResponse:
+        return FileResponse(static_dir / "index.html")
 
     @app.get("/health")
     def health() -> dict[str, str]:

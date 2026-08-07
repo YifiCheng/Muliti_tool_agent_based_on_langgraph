@@ -17,7 +17,7 @@ llm:
     model_env: REMOTE_QWEN_MODEL
 
 rag:
-  docs_dir: data/docs
+  docs_dir: data/public_docs/clean
   index_dir: data/index
   chunk_size: 500
   chunk_overlap: 80

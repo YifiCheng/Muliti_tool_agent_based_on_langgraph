@@ -1,0 +1,105 @@
+version: 1
+description: Public enterprise handbook and process documents for RAG demos.
+updated_at: "2026-08-07"
+usage_note: >
+  These sources are public web documents. Verify each license_url before
+  redistribution. Keep attribution in data/public_docs/NOTICE.md.
+
+sources:
+  - id: gitlab_handbook_values
+    title: GitLab Handbook - Values
+    organization: GitLab
+    source_url: https://handbook.gitlab.com/handbook/values/
+    fetch_url: https://handbook.gitlab.com/handbook/values/
+    fetch_type: html
+    language: en
+    license: CC-BY-SA-4.0
+    license_url: https://handbook.gitlab.com/handbook/about/#license
+    topics:
+      - company-values
+      - handbook
+      - collaboration
+
+  - id: gitlab_handbook_communication
+    title: GitLab Handbook - Communication
+    organization: GitLab
+    source_url: https://handbook.gitlab.com/handbook/communication/
+    fetch_url: https://handbook.gitlab.com/handbook/communication/
+    fetch_type: html
+    language: en
+    license: CC-BY-SA-4.0
+    license_url: https://handbook.gitlab.com/handbook/about/#license
+    topics:
+      - communication
+      - remote-work
+      - async-work
+
+  - id: mattermost_handbook_product
+    title: Mattermost Handbook - Product
+    organization: Mattermost
+    source_url: https://handbook.mattermost.com/operations/research-and-development/product/product-management-team-handbook
+    fetch_url: https://handbook.mattermost.com/operations/research-and-development/product/product-management-team-handbook
+    fetch_type: html
+    language: en
+    license: Creative-Commons
+    license_url: https://handbook.mattermost.com/
+    topics:
+      - product-management
+      - process
+      - planning
+
+  - id: mattermost_handbook_people
+    title: Mattermost Handbook - People
+    organization: Mattermost
+    source_url: https://handbook.mattermost.com/operations/workplace/people
+    fetch_url: https://handbook.mattermost.com/operations/workplace/people
+    fetch_type: html
+    language: en
+    license: Creative-Commons
+    license_url: https://handbook.mattermost.com/
+    topics:
+      - people
+      - workplace
+      - hr
+
+  - id: gitlab_handbook_engineering
+    title: GitLab Handbook - Engineering
+    organization: GitLab
+    source_url: https://handbook.gitlab.com/handbook/engineering/
+    fetch_url: https://handbook.gitlab.com/handbook/engineering/
+    fetch_type: html
+    language: en
+    license: CC-BY-SA-4.0
+    license_url: https://handbook.gitlab.com/handbook/about/#license
+    topics:
+      - engineering
+      - development
+      - workflow
+
+  - id: gitlab_handbook_product
+    title: GitLab Handbook - Product
+    organization: GitLab
+    source_url: https://handbook.gitlab.com/handbook/product/
+    fetch_url: https://handbook.gitlab.com/handbook/product/
+    fetch_type: html
+    language: en
+    license: CC-BY-SA-4.0
+    license_url: https://handbook.gitlab.com/handbook/about/#license
+    topics:
+      - product
+      - product-management
+      - planning
+
+  - id: clef_handbook
+    title: Clef Handbook
+    organization: Clef
+    source_url: https://github.com/clef/handbook
+    fetch_url: https://raw.githubusercontent.com/clef/handbook/master/README.md
+    fetch_type: markdown
+    language: en
+    license: CC0-1.0
+    license_url: https://github.com/clef/handbook/blob/master/LICENSE
+    topics:
+      - employee-handbook
+      - hr
+      - culture

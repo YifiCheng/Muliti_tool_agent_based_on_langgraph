@@ -25,6 +25,15 @@
 !agent-platform/Dockerfile
 !agent-platform/.dockerignore
 
+# 跟踪公开文档来源清单和署名文件
+!agent-platform/data/source_manifest.yaml
+!agent-platform/data/public_docs/
+!agent-platform/data/public_docs/NOTICE.md
+
+# 公开文档 raw/clean 由脚本生成，默认不提交
+agent-platform/data/public_docs/raw/
+agent-platform/data/public_docs/clean/
+
 # 忽略 Python 缓存和编译文件
 __pycache__/
 *.py[cod]

@@ -1,0 +1,20 @@
+services:
+  agent-platform:
+    build:
+      context: ./agent-platform
+      dockerfile: Dockerfile
+    container_name: business-multi-tool-agent
+    ports:
+      - "8000:8000"
+    environment:
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+      QWEN_BASE_URL: ${QWEN_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+      QWEN_API_KEY: ${QWEN_API_KEY:-}
+      QWEN_MODEL: ${QWEN_MODEL:-qwen-plus}
+      REMOTE_QWEN_BASE_URL: ${REMOTE_QWEN_BASE_URL:-}
+      REMOTE_QWEN_API_KEY: ${REMOTE_QWEN_API_KEY:-}
+      REMOTE_QWEN_MODEL: ${REMOTE_QWEN_MODEL:-}
+    volumes:
+      - ./agent-platform/data:/app/data
+    command: ["python", "scripts/docker_entrypoint.py"]

@@ -19,6 +19,12 @@
 # 跟踪 .env.example 文件
 !agent-platform/.env.example
 
+!docker-compose.yml
+!docs/
+!docs/**/*.md
+!agent-platform/Dockerfile
+!agent-platform/.dockerignore
+
 # 忽略 Python 缓存和编译文件
 __pycache__/
 *.py[cod]

@@ -33,6 +33,7 @@ def build_commands() -> list[list[str]]:
         ],
         [sys.executable, "scripts/smoke_api.py"],
         [sys.executable, "scripts/smoke_frontend.py"],
+        [sys.executable, "scripts/smoke_eval.py"],
     ]
 
 

@@ -1,0 +1,57 @@
+cases:
+  - case_id: rag_reimbursement_approval
+    category: rag
+    query: 报销超过 5000 元需要谁审批？
+    expected_tools:
+      - document_search
+    expected_keywords:
+      - 部门负责人
+      - 财务负责人
+    require_evidence: true
+
+  - case_id: rag_reimbursement_deadline
+    category: rag
+    query: 员工应在费用发生后多少天内提交报销？
+    expected_tools:
+      - document_search
+    expected_keywords:
+      - "30"
+      - 报销
+    require_evidence: true
+
+  - case_id: sql_top_sales_product
+    category: sql
+    query: 销售额最高的商品是什么？
+    expected_tools:
+      - sql_query
+    expected_keywords:
+      - 智能客服套餐
+    require_evidence: false
+
+  - case_id: sql_shenzhen_customers
+    category: sql
+    query: 深圳有哪些客户？
+    expected_tools:
+      - sql_query
+    expected_keywords:
+      - 深圳
+    require_evidence: false
+
+  - case_id: calculator_simple
+    category: calculator
+    query: 12 * 8
+    expected_tools:
+      - mock_calculator
+    expected_keywords:
+      - "96"
+    require_evidence: false
+
+  - case_id: approval_sql_approve
+    category: approval
+    query: 销售额最高的商品是什么？
+    expected_tools:
+      - sql_query
+    expected_keywords:
+      - 智能客服套餐
+    require_approval: true
+    approval_decision: approve

@@ -28,9 +28,29 @@ rag:
 
 
 sql:
+  backend: mysql
   sqlite_path: data/sql/business.db
+  mysql_host_env: MYSQL_HOST
+  mysql_port_env: MYSQL_PORT
+  mysql_user_env: MYSQL_USER
+  mysql_password_env: MYSQL_PASSWORD
+  mysql_database_env: MYSQL_DATABASE
+  mysql_charset: utf8mb4
+  mysql_connect_timeout_seconds: 5
+  mysql_read_timeout_seconds: 10
+  mysql_write_timeout_seconds: 10
   max_rows: 50
   timeout_seconds: 5
+
+redis:
+  enabled: true
+  host_env: REDIS_HOST
+  port_env: REDIS_PORT
+  db_env: REDIS_DB
+  password_env: REDIS_PASSWORD
+  socket_timeout_seconds: 3
+  key_prefix: business-agent
+  default_ttl_seconds: 3600
 
 observer:
   sqlite_path: data/traces/agent_traces.db

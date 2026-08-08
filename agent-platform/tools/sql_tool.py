@@ -35,7 +35,7 @@ class SQLQueryTool(BaseTool):
     name = "sql_query"
     description = "Run safe read-only SQL queries on the business database."
 
-    def __init__(self, executor: SQLiteExecutor) -> None:
+    def __init__(self, executor: Any) -> None:
         self.executor = executor
 
     def run(self, request: ToolRequest) -> ToolResult:
@@ -92,3 +92,7 @@ def plan_sql_from_query(query: str) -> str:
     ORDER BY order_date DESC
     LIMIT 5
     """
+
+class SQLExecutorProtocol:
+    def execute(self, sql: str) -> list[dict[str, Any]]:
+        ...

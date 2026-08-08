@@ -27,9 +27,29 @@ rag:
   query_translation_strategy: noop
 
 sql:
+  backend: sqlite
   sqlite_path: data/sql/business.db
+  mysql_host_env: MYSQL_HOST
+  mysql_port_env: MYSQL_PORT
+  mysql_user_env: MYSQL_USER
+  mysql_password_env: MYSQL_PASSWORD
+  mysql_database_env: MYSQL_DATABASE
+  mysql_charset: utf8mb4
+  mysql_connect_timeout_seconds: 5
+  mysql_read_timeout_seconds: 10
+  mysql_write_timeout_seconds: 10
   max_rows: 50
   timeout_seconds: 5
+
+redis:
+  enabled: false
+  host_env: REDIS_HOST
+  port_env: REDIS_PORT
+  db_env: REDIS_DB
+  password_env: REDIS_PASSWORD
+  socket_timeout_seconds: 3
+  key_prefix: business-agent-test
+  default_ttl_seconds: 60
 
 observer:
   sqlite_path: data/traces/agent_traces.db

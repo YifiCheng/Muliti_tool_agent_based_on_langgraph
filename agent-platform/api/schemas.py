@@ -39,3 +39,19 @@ class AgentStateResponse(BaseModel):
 class TraceListResponse(BaseModel):
     trace_id: str
     events: list[dict[str, Any]] = Field(default_factory=list)
+
+class RuntimeStatusResponse(BaseModel):
+    app_name: str
+    env: str
+    llm_provider: str
+    sql_backend: str
+    redis_enabled: bool
+    rag_docs_dir: str
+    agent_max_iterations: int
+
+
+class ReportResponse(BaseModel):
+    name: str
+    exists: bool
+    path: str
+    data: Any | None = None

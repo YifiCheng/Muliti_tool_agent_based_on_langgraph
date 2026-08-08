@@ -43,10 +43,29 @@ class RAGConfig(BaseModel):
 
 
 class SQLConfig(BaseModel):
-    sqlite_path: str
+    backend: Literal["sqlite", "mysql"] = "sqlite"
+    sqlite_path: str = "data/sql/business.db"
+    mysql_host_env: str = "MYSQL_HOST"
+    mysql_port_env: str = "MYSQL_PORT"
+    mysql_user_env: str = "MYSQL_USER"
+    mysql_password_env: str = "MYSQL_PASSWORD"
+    mysql_database_env: str = "MYSQL_DATABASE"
+    mysql_charset: str = "utf8mb4"
+    mysql_connect_timeout_seconds: int = Field(default=5, ge=1, le=60)
+    mysql_read_timeout_seconds: int = Field(default=10, ge=1, le=120)
+    mysql_write_timeout_seconds: int = Field(default=10, ge=1, le=120)
     max_rows: int = 50
     timeout_seconds: int = 5
 
+class RedisConfig(BaseModel):
+    enabled: bool = False
+    host_env: str = "REDIS_HOST"
+    port_env: str = "REDIS_PORT"
+    db_env: str = "REDIS_DB"
+    password_env: str = "REDIS_PASSWORD"
+    socket_timeout_seconds: int = Field(default=3, ge=1, le=30)
+    key_prefix: str = "business-agent"
+    default_ttl_seconds: int = Field(default=3600, ge=1, le=86400)
 
 class ObserverConfig(BaseModel):
     sqlite_path: str
@@ -69,6 +88,7 @@ class Settings(BaseModel):
     llm: LLMConfig
     rag: RAGConfig
     sql: SQLConfig
+    redis: RedisConfig
     observer: ObserverConfig
     agent: AgentConfig
 

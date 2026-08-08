@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import json
 
 from api.schemas import (
     AgentResumeRequest,
@@ -6,6 +7,8 @@ from api.schemas import (
     AgentRunResponse,
     AgentStateResponse,
     TraceListResponse,
+    ReportResponse,
+    RuntimeStatusResponse,  
 )
 from api.service import AgentService
 from config.settings import load_settings
@@ -30,6 +33,50 @@ def create_app() -> FastAPI:
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok"}
+    
+    @app.get("/api/v1/status", response_model=RuntimeStatusResponse)
+    def runtime_status() -> RuntimeStatusResponse:
+        settings = load_settings()
+        return RuntimeStatusResponse(
+            app_name=settings.app.name,
+            env=settings.app.env,
+            llm_provider=settings.llm.provider,
+            sql_backend=settings.sql.backend,
+            redis_enabled=settings.redis.enabled,
+            rag_docs_dir=settings.rag.docs_dir,
+            agent_max_iterations=settings.agent.max_iterations,
+        )
+    
+    @app.get("/api/v1/reports/{report_name}", response_model=ReportResponse)
+    def get_report(report_name: str) -> ReportResponse:
+        allowed_reports = {
+            "qwen-provider-comparison": Path("eval/reports/qwen_provider_comparison.json"),
+            "redis-cache-benchmark": Path("eval/reports/redis_cache_benchmark.json"),
+            "public-docs-rag": Path("eval/reports/public_docs_rag_report.json"),
+        }
+        if report_name not in allowed_reports:
+            return ReportResponse(
+                name=report_name,
+                exists=False,
+                path="",
+                data={"error": "unknown report"},
+            )
+
+        path = allowed_reports[report_name]
+        if not path.exists():
+            return ReportResponse(
+                name=report_name,
+                exists=False,
+                path=str(path),
+                data=None,
+            )
+
+        return ReportResponse(
+            name=report_name,
+            exists=True,
+            path=str(path),
+            data=json.loads(path.read_text(encoding="utf-8")),
+        )
 
     @app.post("/api/v1/agent/runs", response_model=AgentRunResponse)
     def run_agent(request: AgentRunRequest) -> AgentRunResponse:

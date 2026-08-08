@@ -4,22 +4,47 @@ from uuid import uuid4
 import yaml
 from langgraph.types import Command
 
-from config.settings import load_settings
+from config.settings import Settings, load_settings
 from eval.metrics import build_report, score_case
-from eval.schema import EvalCase, EvalReport
+from eval.schema import EvalCase, EvalDatasetMetadata, EvalReport
 from graph.app import build_agent_graph
 from graph.checkpointer import build_memory_checkpointer
 from scripts.init_sqlite import init_sqlite
 
 
-def load_cases(path: str | Path) -> list[EvalCase]:
+def load_dataset(path: str | Path) -> tuple[EvalDatasetMetadata, list[EvalCase]]:
     raw = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    return [EvalCase.model_validate(item) for item in raw["cases"]]
+    metadata = EvalDatasetMetadata.model_validate(raw.get("metadata", {}))
+    cases = [EvalCase.model_validate(item) for item in raw["cases"]]
+    return metadata, cases
 
 
-def run_eval(cases: list[EvalCase]) -> EvalReport:
-    init_sqlite()
+def load_cases(path: str | Path) -> list[EvalCase]:
+    _, cases = load_dataset(path)
+    return cases
+
+
+def settings_for_dataset(metadata: EvalDatasetMetadata) -> Settings:
     settings = load_settings()
+    if metadata.rag_docs_dir:
+        settings = settings.model_copy(
+            update={
+                "rag": settings.rag.model_copy(
+                    update={"docs_dir": metadata.rag_docs_dir}
+                )
+            }
+        )
+    return settings
+
+
+def run_eval(
+    cases: list[EvalCase],
+    *,
+    metadata: EvalDatasetMetadata | None = None,
+) -> EvalReport:
+    init_sqlite()
+    metadata = metadata or EvalDatasetMetadata()
+    settings = settings_for_dataset(metadata)
     checkpointer = build_memory_checkpointer()
     graph_without_approval = build_agent_graph(
         settings=settings,
@@ -72,4 +97,7 @@ def run_eval(cases: list[EvalCase]) -> EvalReport:
 
         results.append(score_case(case, output))
 
-    return build_report(results)
+    return build_report(
+        results,
+        metadata=metadata.model_dump(),
+    )

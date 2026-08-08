@@ -13,14 +13,19 @@ def main() -> None:
     args = parser.parse_args()
 
     data = json.loads(Path(args.input).read_text(encoding="utf-8"))
+    metadata = data.get("metadata", {})
+    title = metadata.get("name", "MVP 自动化评测报告")
 
     lines = [
-        "# MVP 自动化评测报告",
+        f"# {title}",
+        "",
+        metadata.get("description", ""),
         "",
         f"- Total: {data['total']}",
         f"- Passed: {data['passed']}",
         f"- Pass Rate: {data['pass_rate']:.2%}",
         f"- Average Score: {data['average_score']:.2f}",
+        f"- RAG Docs Dir: {metadata.get('rag_docs_dir', '')}",
         "",
         "## By Category",
         "",
@@ -42,14 +47,19 @@ def main() -> None:
     lines.extend(["## Cases", ""])
     for result in data["results"]:
         status = "PASS" if result["passed"] else "FAIL"
+        result_metadata = result.get("metadata", {})
         lines.extend(
             [
                 f"### {result['case_id']} - {status}",
                 "",
                 f"- Category: {result['category']}",
+                f"- Query: {result['query']}",
                 f"- Score: {result['score']:.2f}",
                 f"- Selected Tools: {result['selected_tools']}",
                 f"- Errors: {result['errors']}",
+                f"- Evidence Count: {result_metadata.get('evidence_count', 0)}",
+                f"- Expected Sources: {result_metadata.get('expected_sources', [])}",
+                f"- Actual Sources: {result_metadata.get('actual_sources', [])}",
                 "",
             ]
         )

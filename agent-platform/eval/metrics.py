@@ -1,18 +1,41 @@
 from collections import defaultdict
+from typing import Any
 
 from eval.schema import EvalCase, EvalCaseResult, EvalReport
 
 
 def contains_all_keywords(text: str, keywords: list[str]) -> bool:
-    return all(keyword in text for keyword in keywords)
+    return all(keyword.lower() in text.lower() for keyword in keywords)
 
 
 def tool_match(selected_tools: list[str], expected_tools: list[str]) -> bool:
     return all(tool in selected_tools for tool in expected_tools)
 
 
+def evidence_items(state: dict) -> list[dict[str, Any]]:
+    return state.get("evidence", []) or []
+
+
 def has_evidence(state: dict) -> bool:
-    return bool(state.get("evidence", []))
+    return bool(evidence_items(state))
+
+
+def evidence_count_at_least(state: dict, minimum: int) -> bool:
+    return len(evidence_items(state)) >= minimum
+
+
+def evidence_source_match(state: dict, expected_sources: list[str]) -> bool:
+    if not expected_sources:
+        return True
+
+    sources = [
+        str(item.get("source", ""))
+        for item in evidence_items(state)
+    ]
+    return all(
+        any(expected_source in source for source in sources)
+        for expected_source in expected_sources
+    )
 
 
 def score_case(case: EvalCase, state: dict) -> EvalCaseResult:
@@ -21,15 +44,32 @@ def score_case(case: EvalCase, state: dict) -> EvalCaseResult:
 
     checks = {
         "tool_match": tool_match(selected_tools, case.expected_tools),
-        "keyword_match": contains_all_keywords(final_answer, case.expected_keywords),
+        "keyword_match": contains_all_keywords(
+            final_answer,
+            case.expected_keywords,
+        ),
         "has_final_answer": bool(final_answer),
     }
 
     if case.require_evidence:
         checks["evidence_present"] = has_evidence(state)
 
+    if case.min_evidence_count:
+        checks["evidence_count"] = evidence_count_at_least(
+            state,
+            case.min_evidence_count,
+        )
+
+    if case.expected_sources:
+        checks["source_match"] = evidence_source_match(
+            state,
+            case.expected_sources,
+        )
+
     if case.require_approval:
-        checks["approval_status"] = state.get("approval_status") == case.approval_decision + "d"
+        checks["approval_status"] = (
+            state.get("approval_status") == case.approval_decision + "d"
+        )
         if case.approval_decision == "approve":
             checks["sql_executed"] = any(
                 result.get("tool_name") == "sql_query"
@@ -54,11 +94,22 @@ def score_case(case: EvalCase, state: dict) -> EvalCaseResult:
         metadata={
             "iteration": state.get("iteration"),
             "approval_status": state.get("approval_status"),
+            "query_language": case.query_language,
+            "evidence_count": len(evidence_items(state)),
+            "expected_sources": case.expected_sources,
+            "actual_sources": [
+                item.get("source")
+                for item in evidence_items(state)
+            ],
         },
     )
 
 
-def build_report(results: list[EvalCaseResult]) -> EvalReport:
+def build_report(
+    results: list[EvalCaseResult],
+    *,
+    metadata: dict[str, Any] | None = None,
+) -> EvalReport:
     total = len(results)
     passed = sum(1 for result in results if result.passed)
     average_score = (
@@ -91,4 +142,5 @@ def build_report(results: list[EvalCaseResult]) -> EvalReport:
         average_score=average_score,
         by_category=by_category,
         results=results,
+        metadata=metadata or {},
     )

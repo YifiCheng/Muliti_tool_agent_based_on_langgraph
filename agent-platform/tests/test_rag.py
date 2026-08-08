@@ -116,7 +116,8 @@ def test_document_search_returns_evidence():
     assert result.evidence
     assert result.evidence[0].source
     assert result.evidence[0].content
-
+    assert "search_query" in result.metadata
+    assert "translation_strategy" in result.metadata
 
 def test_document_search_no_match_returns_empty_evidence():
     chunks = make_chunks()

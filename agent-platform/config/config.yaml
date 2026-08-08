@@ -17,11 +17,13 @@ llm:
     model_env: REMOTE_QWEN_MODEL
 
 rag:
-  docs_dir: data/public_docs/clean
+  docs_dir: data/docs
   index_dir: data/index
   chunk_size: 500
   chunk_overlap: 80
   top_k: 5
+  enable_query_translation: true
+  query_translation_strategy: rule_based
 
 sql:
   sqlite_path: data/sql/business.db

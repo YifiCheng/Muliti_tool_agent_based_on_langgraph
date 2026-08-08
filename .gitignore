@@ -34,6 +34,14 @@
 agent-platform/data/public_docs/raw/
 agent-platform/data/public_docs/clean/
 
+# 跟踪远端部署脚本
+!deploy/
+!deploy/*.ps1
+
+# 忽略远端部署打包产物
+.deploy_bundle/
+business-multi-tool-agent-remote.tar.gz
+
 # 忽略 Python 缓存和编译文件
 __pycache__/
 *.py[cod]
@@ -67,3 +75,5 @@ env/
 # 忽略操作系统文件
 .DS_Store
 Thumbs.db
+
+

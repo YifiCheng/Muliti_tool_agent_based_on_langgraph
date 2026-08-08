@@ -36,6 +36,8 @@ class RAGConfig(BaseModel):
     chunk_size: int = 500
     chunk_overlap: int = 80
     top_k: int = 5
+    enable_query_translation: bool = True
+    query_translation_strategy: Literal["noop", "rule_based"] = "rule_based"
 
 
 class SQLConfig(BaseModel):

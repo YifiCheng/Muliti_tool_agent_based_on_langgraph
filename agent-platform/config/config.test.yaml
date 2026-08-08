@@ -1,13 +1,13 @@
 app:
-  name: business-multi-tool-agent
-  env: dev
+  name: business-multi-tool-agent-test
+  env: test
 
 llm:
-  provider: qwen_api
-  timeout_seconds: 60
-  max_retries: 1
-  queue_wait_timeout_seconds: 10
-  max_output_tokens: 512
+  provider: mock
+  timeout_seconds: 5
+  max_retries: 0
+  queue_wait_timeout_seconds: 0
+  max_output_tokens: 256
   qwen_api:
     base_url_env: QWEN_BASE_URL
     api_key_env: QWEN_API_KEY
@@ -18,14 +18,13 @@ llm:
     model_env: REMOTE_QWEN_MODEL
 
 rag:
-  docs_dir: data/public_docs/clean
+  docs_dir: data/docs
   index_dir: data/index
   chunk_size: 500
   chunk_overlap: 80
   top_k: 5
-  enable_query_translation: true
-  query_translation_strategy: rule_based
-
+  enable_query_translation: false
+  query_translation_strategy: noop
 
 sql:
   sqlite_path: data/sql/business.db
@@ -36,7 +35,7 @@ observer:
   sqlite_path: data/traces/agent_traces.db
 
 agent:
-  max_iterations: 2
-  enable_reflection: false
+  max_iterations: 3
+  enable_reflection: true
   checkpoint_path: data/checkpoints/agent_checkpoints.sqlite
   require_sql_approval: false

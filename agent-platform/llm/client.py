@@ -36,6 +36,8 @@ def build_llm_client(settings: Settings | None = None) -> LLMClient:
                 model=_read_env(provider_config.model_env),
                 timeout_seconds=settings.llm.timeout_seconds,
                 max_retries=settings.llm.max_retries,
+                queue_wait_timeout_seconds=settings.llm.queue_wait_timeout_seconds,
+                max_output_tokens=settings.llm.max_output_tokens,
             )
         )
 
@@ -48,6 +50,7 @@ def build_llm_client(settings: Settings | None = None) -> LLMClient:
                 model=_read_env(provider_config.model_env),
                 timeout_seconds=settings.llm.timeout_seconds,
                 max_retries=settings.llm.max_retries,
+                max_output_tokens=settings.llm.max_output_tokens,
             )
         )
 

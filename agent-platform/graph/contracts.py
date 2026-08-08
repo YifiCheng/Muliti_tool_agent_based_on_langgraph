@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -7,13 +7,27 @@ class PlanDecision(BaseModel):
     tools: list[str] = Field(default_factory=list)
     reason: str = ""
 
-    @field_validator("tools")
+    @field_validator("tools", mode="before")
     @classmethod
-    def validate_tools(cls, tools: list[str]) -> list[str]:
-        cleaned = [tool.strip() for tool in tools if tool.strip()]
+    def normalize_tools(cls, tools: Any) -> list[str]:
+        if not isinstance(tools, list):
+            raise ValueError("Plan tools must be a list")
+
+        normalized: list[str] = []
+        for item in tools:
+            if isinstance(item, str):
+                name = item.strip()
+            elif isinstance(item, dict):
+                name = str(item.get("name", "")).strip()
+            else:
+                name = ""
+            if name:
+                normalized.append(name)
+
+        cleaned = list(dict.fromkeys(normalized))
         if not cleaned:
             raise ValueError("Plan must select at least one tool")
-        return list(dict.fromkeys(cleaned))
+        return cleaned
 
 
 class AgentError(BaseModel):

@@ -37,7 +37,14 @@ def build_agent_graph(
     builder = StateGraph(AgentState)
     builder.add_node("plan", build_plan_node(llm, registry, trace_store))
     builder.add_node("tool", build_tool_node(registry, trace_store))
-    builder.add_node("reflect", build_reflect_node(llm, trace_store))
+    builder.add_node(
+        "reflect",
+        build_reflect_node(
+            llm,
+            trace_store,
+            enable_llm_reflection=settings.agent.enable_reflection,
+        ),
+    )
     builder.add_node("answer", build_answer_node(llm, trace_store))
 
     builder.add_node(

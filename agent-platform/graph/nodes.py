@@ -9,9 +9,14 @@ from tools.runner import run_tool_safely
 from graph.state import AgentState
 
 from reflection.llm_reflector import HybridReflector
+from reflection.rule_reflector import RuleReflector
 
 from graph.contracts import AgentError, PlanDecision
-from graph.prompts import build_answer_messages, build_plan_messages
+from graph.prompts import (
+    build_answer_messages,
+    build_plan_messages,
+    infer_tools_from_query,
+)
 from graph.state_utils import (
     append_tool_results,
     collect_tool_errors,
@@ -39,11 +44,12 @@ def build_plan_node(
         session_id = state["session_id"]
         query = get_active_query(state)
         iteration = state.get("iteration", 0) + 1
+        available_tools = registry.descriptions()
 
         def run() -> dict[str, Any]:
             try:
                 raw_plan = llm.chat_json(
-                    build_plan_messages(query, registry.descriptions()),
+                    build_plan_messages(query, available_tools),
                     schema_name="plan",
                 )
                 plan = PlanDecision.model_validate(raw_plan)
@@ -54,6 +60,21 @@ def build_plan_node(
                     "iteration": iteration,
                 }
             except Exception as exc:
+                fallback_tools = infer_tools_from_query(query, available_tools)
+                if fallback_tools:
+                    return {
+                        "plan": {
+                            "tools": fallback_tools,
+                            "reason": (
+                                "LLM planning failed or returned invalid tools; "
+                                "selected tools by rule-based fallback."
+                            ),
+                        },
+                        "selected_tools": fallback_tools,
+                        "active_query": query,
+                        "iteration": iteration,
+                    }
+
                 error = AgentError(
                     category="planning",
                     source="plan",
@@ -166,9 +187,12 @@ def build_tool_node(
 def build_reflect_node(
     llm: LLMClient,
     trace_store: TraceStore | None = None,
-    reflector: HybridReflector | None = None,
+    reflector: HybridReflector | RuleReflector | None = None,
+    enable_llm_reflection: bool = True,
 ):
-    reflector = reflector or HybridReflector(llm)
+    reflector = reflector or (
+        HybridReflector(llm) if enable_llm_reflection else RuleReflector()
+    )
 
     def reflect_node(state: AgentState) -> dict[str, Any]:
         trace_id = state["trace_id"]

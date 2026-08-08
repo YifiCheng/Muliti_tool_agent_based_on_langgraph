@@ -12,6 +12,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--case-id", default="")
+    parser.add_argument("--limit", type=int, default=0)
     parser.add_argument(
         "--allow-failures",
         action="store_true",
@@ -20,6 +22,12 @@ def main() -> None:
     args = parser.parse_args()
 
     metadata, cases = load_dataset(args.dataset)
+    if args.case_id:
+        cases = [case for case in cases if case.case_id == args.case_id]
+        if not cases:
+            raise SystemExit(f"case not found: {args.case_id}")
+    if args.limit > 0:
+        cases = cases[: args.limit]
     report = run_eval(cases, metadata=metadata)
 
     output_path = Path(args.output)

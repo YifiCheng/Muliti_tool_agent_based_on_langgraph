@@ -6,7 +6,7 @@
 # - 将 YAML 转成 Pydantic model；
 # - 暴露 `load_settings()` 函数；
 # - 路径不存在时抛出清晰错误。
-
+import os
 
 from pathlib import Path
 from typing import Literal
@@ -23,9 +23,11 @@ class LLMProviderConfig(BaseModel):
 
 
 class LLMConfig(BaseModel):
-    provider: Literal["mock", "qwen_api", "remote_qwen"] = "mock"
-    timeout_seconds: int = 30
-    max_retries: int = 2
+    provider: Literal["mock", "qwen_api", "remote_qwen"] = "qwen_api"
+    timeout_seconds: int = Field(default=60, ge=1, le=300)
+    max_retries: int = Field(default=1, ge=0, le=5)
+    queue_wait_timeout_seconds: int = Field(default=10, ge=0, le=120)
+    max_output_tokens: int = Field(default=512, ge=64, le=4096)
     qwen_api: LLMProviderConfig
     remote_qwen: LLMProviderConfig
 
@@ -71,9 +73,13 @@ class Settings(BaseModel):
     agent: AgentConfig
 
 
-def load_settings(config_path: str | Path = "config/config.yaml") -> Settings:
+def load_settings(config_path: str | Path | None = None) -> Settings:
     load_dotenv()
-    path = Path(config_path)
+    resolved_path = config_path or os.getenv(
+        "AGENT_CONFIG_PATH",
+        "config/config.yaml",
+    )
+    path = Path(resolved_path)
     if not path.exists():
         raise FileNotFoundError(f"Config file not found: {path}")
 

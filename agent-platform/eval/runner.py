@@ -11,6 +11,8 @@ from graph.app import build_agent_graph
 from graph.checkpointer import build_memory_checkpointer
 from scripts.init_sqlite import init_sqlite
 
+from time import perf_counter
+
 
 def load_dataset(path: str | Path) -> tuple[EvalDatasetMetadata, list[EvalCase]]:
     raw = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
@@ -75,6 +77,8 @@ def run_eval(
         }
         config = {"configurable": {"thread_id": thread_id}}
         graph = graph_with_approval if case.require_approval else graph_without_approval
+        started = perf_counter()
+        print(f"eval_case_start={case.case_id}", flush=True)        
         output = graph.invoke(state, config=config)
 
         if output.get("__interrupt__"):
@@ -94,7 +98,11 @@ def run_eval(
                     ),
                     config=config,
                 )
-
+        latency_ms = int((perf_counter() - started) * 1000)
+        print(
+            f"eval_case_done={case.case_id} latency_ms={latency_ms}",
+            flush=True,
+        )
         results.append(score_case(case, output))
 
     return build_report(

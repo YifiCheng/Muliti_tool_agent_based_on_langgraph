@@ -76,4 +76,6 @@ env/
 .DS_Store
 Thumbs.db
 
+!README.md
+
 
